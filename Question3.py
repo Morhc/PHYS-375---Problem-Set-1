@@ -139,14 +139,23 @@ def part_b(orbit_data, savepath=''):
     #According to p. 326 of Ryden, "the amplitudes of the two radial velocity curves yield va sini and vb sini"
 
     #from equation 13.67 from Ryden : the amplitudes are the velocities, divided by 1000 to get m/s
-    m_a_m_b_sin3i = P*np.power(A_1*1000 + A_2*1000, 3)/2/np.pi/G
+    ma_mb_sin3i = P*np.power(A_1*1000 + A_2*1000, 3)/2/np.pi/G
 
-    #assuming they can be separated (but i don't think it's valid)
-    masin3i = P*np.power(A_1*1000, 3)/2/np.pi/G
-    mbsin3i = P*np.power(A_2*1000, 3)/2/np.pi/G
-    print(m_a_m_b_sin3i)
-    print(masin3i)
-    print(mbsin3i)
+    #from Equation 13.62 we know that the ratio of velocities gives the ratio of the masses
+    ma_mb = A_2/A_1
+
+    #from Equation 13.74 we find mb given ma/mb
+    mbsin3i = P*np.power(A_1*1000, 3)*np.power(1 + ma_mb, 2)/2/np.pi/G
+
+    #Equation 13.62 implies that if you know mbsin3i you can know masin3i
+    masin3i = ma_mb * mbsin3i
+
+    print(f'masin3i {masin3i}kg')
+    print(f'mbsin3i {mbsin3i}kg')
+    #verification: I'm right
+    print(f'Verification {ma_mb_sin3i}kg {masin3i + mbsin3i}kg')
+
+    return masin3i, mbsin3i
 
 def part_c(orbit_data, savepath=''):
     """Plot the logarithm of L/Lo where Lo is when both stars are visible.
@@ -177,6 +186,41 @@ def part_c(orbit_data, savepath=''):
 
     plt.close('all')
 
+def part_d_e(Ma, Mb):
+
+    #from the back cover of Ryden
+    sb = 5.67e-8
+
+    #from Ryden p. 576
+    Mo = 1.989e30
+    Lo = 3.839e26
+    Ro = 6.955e8
+
+    a_ratio = Ma/Mo
+    b_ratio = Mb/Mo
+    print(f'Solar Mass {Mo}kg')
+    print('M_a/Mo', a_ratio)
+    print('M_b/Mo', b_ratio)
+
+    #therefore, the masses are less than 1.66Mo
+
+    #we use Equation 13.78 to get the luminosity
+    L_a = Lo*0.35*np.power(a_ratio, 2.62)
+    L_b = Lo*0.35*np.power(b_ratio, 2.62)
+
+    #we use Equation 13.77 to get the radius
+    R_a = Ro*1.06*np.power(a_ratio, 0.945)
+    R_b = Ro*1.06*np.power(b_ratio, 0.945)
+
+    #we can use Equation 13.52 to get the temperature
+    T_a = np.power(L_a/4/np.pi/np.power(R_a, 2)/sb, 0.25)
+    T_b = np.power(L_b/4/np.pi/np.power(R_b, 2)/sb, 0.25)
+
+    print(f'T_a {T_a}K')
+    print(f'T_b {T_b}K')
+
+    print(f'R_a {R_a}m')
+    print(f'R_b {R_b}m')
 
 def main():
 
@@ -188,16 +232,16 @@ def main():
     a_plot = os.path.join(here, 'PS1-Q3a.png')
     part_a(orbit_data, a_plot)
 
-    #unfinished
     b_plot = os.path.join(here, 'PS1-Q3b.png')
-    part_b(orbit_data, b_plot)
+    Ma, Mb = part_b(orbit_data, b_plot)
 
-    #note: since the stars are eclipsing --> i must be near 90 (Ryden p. 329)
-    #might be wrong -- might depend on sini
     c_plot = os.path.join(here, 'PS1-Q3c.png')
     part_c(orbit_data, c_plot)
 
-
+    #note: since the stars are eclipsing --> i must be near 90 (Ryden p. 329)
+    #therefore, we can say that sin3i approximately == 1
+    #might not be doing this correctly
+    part_d_e(Ma, Mb)
 
 
 if __name__ == '__main__':
