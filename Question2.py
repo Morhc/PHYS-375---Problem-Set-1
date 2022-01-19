@@ -128,12 +128,12 @@ def part_a(hipparcos, savepath=''):
     #Get the absolute V magnitude
     Mv = absolute_magnitude(parallax, V)
 
-    #Get the colour index
+    #Get the colour index with Ryden equation 13.35
     B_V = B - V
 
     plt.scatter(B_V, Mv, edgecolors='black')
 
-    #According to p. 316-317 of Ryden, if a star has B-v < 0 it is bluer than Vega and
+    #According to p. 316-317 of Ryden, if a star has B-V < 0 it is bluer than Vega and
     #if it has B-V > 0 it is redder than Vega. This means that it is justified to leave the
     #x-axis running from 0 --> max(B-V)
 
@@ -176,10 +176,10 @@ def part_b(hipparcos, savepath=''):
 
     plt.scatter(np.log10(temp), np.log10(lum_ratio), edgecolors='black')
 
-    plt.xlabel(r'$log$($T$)')
-    plt.ylabel(r'$log$($L_V$/$L_o$)')
+    plt.xlabel(r'$log$($T [K]$)')
+    plt.ylabel(r'$log$($L_V$/$L_\odot\/$)')
 
-    plt.title(r'$log$($L_V$/$L_o$) vs $log$($T$)')
+    plt.title(r'$log$($L_V$/$L_\odot\/$) vs $log$($T$)')
 
     if savepath == '': plt.show()
     else: plt.savefig(savepath)
@@ -223,14 +223,14 @@ def part_c(hipparcos, savepath=''):
 
     plt.scatter(np.log10(temp), np.log10(lum_ratio), edgecolors='black', label=None)
 
-    plt.plot(np.log10(temp), np.log10(LRo_2), color='orange', label=r'$R = 0.2R_o$')
-    plt.plot(np.log10(temp), np.log10(LRo_1), color='red', label=r'$R = R_o$')
-    plt.plot(np.log10(temp), np.log10(LRo_3), color='green', label=r'$R = 5R_o$')
+    plt.plot(np.log10(temp), np.log10(LRo_2), color='orange', label=r'$R = 0.2R_\odot\/$')
+    plt.plot(np.log10(temp), np.log10(LRo_1), color='red', label=r'$R = R_\odot\/$')
+    plt.plot(np.log10(temp), np.log10(LRo_3), color='green', label=r'$R = 5R_\odot\/$')
 
-    plt.xlabel(r'$log$($T$)')
-    plt.ylabel(r'$log$($L_V$/$L_o$)')
+    plt.xlabel(r'$log$($T [K]$)')
+    plt.ylabel(r'$log$($L_V$/$L_\odot\/$)')
 
-    plt.title(r'$log$($L_V$/$L_o$) vs $log$($T$)')
+    plt.title(r'$log$($L_V$/$L_\odot\/$) vs $log$($T$)')
 
     plt.legend()
 
