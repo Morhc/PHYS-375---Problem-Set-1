@@ -42,13 +42,13 @@ def part_a(orbit_data, savepath=''):
         The plot for PS1 Question 3a.
     """
 
-    plt.plot(orbit_data['Orbital Phase'], orbit_data['Star 1 Vel'], label = 'Star 1 Velocity')
-    plt.plot(orbit_data['Orbital Phase'], orbit_data['Star 2 Vel'], label = 'Star 2 Velocity')
+    plt.plot(orbit_data['Orbital Phase']*50, orbit_data['Star 1 Vel'], label = 'Star A Velocity')
+    plt.plot(orbit_data['Orbital Phase']*50, orbit_data['Star 2 Vel'], label = 'Star B Velocity')
 
     plt.title('Radial Velocities over a Full Orbit')
 
     plt.ylabel(r'Radial Velocity [$km/s$]')
-    plt.xlabel('Orbital Phase (over 50 days)')
+    plt.xlabel('Day of Orbit')
 
     plt.legend()
     if savepath == '': plt.show()
@@ -150,12 +150,14 @@ def part_b(orbit_data, savepath=''):
     #Equation 13.62 implies that if you know mbsin3i you can know masin3i
     masin3i = ma_mb * mbsin3i
 
+    print('Part B')
     print(f'masin3i {masin3i}kg')
     print(f'mbsin3i {mbsin3i}kg')
     #verification: I'm right
     print(f'Verification {ma_mb_sin3i}kg {masin3i + mbsin3i}kg')
+    print('\n')
 
-    return masin3i, mbsin3i
+    return masin3i, mbsin3i, A_1, A_2
 
 def part_c(orbit_data, savepath=''):
     """Plot the logarithm of L/Lo where Lo is when both stars are visible.
@@ -164,6 +166,7 @@ def part_c(orbit_data, savepath=''):
         savepath - The path to save the plot to. If no path is given, the plot is displayed.
     OUTPUTS:
         The plot for PS1 Question 3c.
+        L_L0 - the ratio of luminosity to the maximum luminosity.
     """
 
     #looking at the magnitude over time plot, it's pretty clear to understand that when the stars overlap
@@ -176,9 +179,9 @@ def part_c(orbit_data, savepath=''):
     #based on Equation 13.39 from Ryden
     L_L0 = np.power(10, 0.4*(min_mag - app_mag))
 
-    plt.plot(orbit_data['Orbital Phase'], np.log10(L_L0))
+    plt.plot(orbit_data['Orbital Phase']*50, np.log10(L_L0))
     plt.title(r'log($L/L_0$) over a Full Orbit')
-    plt.xlabel('Orbital Phase (over 50 days)')
+    plt.xlabel('Day of Orbit')
     plt.ylabel(r'log($L/L_0$)')
 
     if savepath == '': plt.show()
@@ -186,7 +189,31 @@ def part_c(orbit_data, savepath=''):
 
     plt.close('all')
 
-def part_d_e(Ma, Mb):
+    plt.plot(orbit_data['Orbital Phase']*50, L_L0)
+    plt.title(r'$L/L_0$ over a Full Orbit')
+    plt.xlabel('Day of Orbit')
+    plt.ylabel(r'$L/L_0$')
+
+    if savepath == '': plt.show()
+    else: plt.savefig(savepath.replace('3c', '3c_alt'))
+    plt.close('all')
+
+    return L_L0
+
+def part_d_e(Ma, Mb, L_L0, va, vb, phase):
+    """Solves Question 3d,e.
+    INPUTS:
+        Ma - the mass of star A
+        Mb - the mass of star B
+        L_L0 - the ratio of luminosity to high luminosity
+        va - the velocity of star A
+        vb - the velocity of star B
+        phase - the orbital phase
+
+    OUTPUTS:
+        Prints out the temperature, luminosity, and radius of stars.
+
+    """
 
     #from the back cover of Ryden
     sb = 5.67e-8
@@ -198,9 +225,10 @@ def part_d_e(Ma, Mb):
 
     a_ratio = Ma/Mo
     b_ratio = Mb/Mo
-    print(f'Solar Mass {Mo}kg')
-    print('M_a/Mo', a_ratio)
-    print('M_b/Mo', b_ratio)
+    #print(f'Solar Mass {Mo}kg')
+    #print('M_a/Mo', a_ratio)
+    #print('M_b/Mo', b_ratio)
+    #print('\n')
 
     #therefore, the masses are less than 1.66Mo
 
@@ -216,11 +244,42 @@ def part_d_e(Ma, Mb):
     T_a = np.power(L_a/4/np.pi/np.power(R_a, 2)/sb, 0.25)
     T_b = np.power(L_b/4/np.pi/np.power(R_b, 2)/sb, 0.25)
 
-    print(f'T_a {T_a}K')
-    print(f'T_b {T_b}K')
 
-    print(f'R_a {R_a}m')
-    print(f'R_b {R_b}m')
+    #calculating d from the graph -- find the minimums
+    #a neat trick is that L2/L0 == the minima at the beginning and that L1/L0 is the global minima
+    logL_L0 = np.log10(L_L0)
+    L2_L0 = L_L0[np.argmin(logL_L0[:300])]
+    L1_L0 = L_L0[np.argmin(logL_L0)]
+
+    ratio_T = np.power(L2_L0/L1_L0, 0.25)
+
+    print('Part D')
+    #print(f'T_a {T_a}K')
+    #print(f'T_b {T_b}K')
+    #print(f'T_a/T_b {T_a/T_b}')
+    print(f'Ratio T_b/T_a from graph {ratio_T}')
+    print('\n')
+
+    #calculating e from the graph -- find the time
+    #doesn't matter whether with the log or not
+    #the short one is found by finding the first time maximum is found.
+    #the long one is found by taking half of the box
+    i = np.argmax(L_L0)
+    dt = phase[i]*50*24*60*60 #convert from phase to seconds
+    Rta = dt*va/2
+
+    Rtb = Rta * np.sqrt(L1_L0/L2_L0)*np.power(1/ratio_T, 2)
+
+    print('Part E')
+    #print(f'R_a {R_a}m')
+    #print(f'R_b {R_b}m')
+    print(f'R_a {Rta}km')
+    print(f'R_b {Rtb}km')
+
+    #radius of the sun from p. 576 Ryden
+    Ro = 6.955e5
+    #print(Rta/Ro)
+    #print(Rtb/Ro)
 
 def main():
 
@@ -233,15 +292,15 @@ def main():
     part_a(orbit_data, a_plot)
 
     b_plot = os.path.join(here, 'PS1-Q3b.png')
-    Ma, Mb = part_b(orbit_data, b_plot)
+    Ma, Mb, va, vb = part_b(orbit_data, b_plot)
 
     c_plot = os.path.join(here, 'PS1-Q3c.png')
-    part_c(orbit_data, c_plot)
+    L_L0 = part_c(orbit_data, c_plot)
 
     #note: since the stars are eclipsing --> i must be near 90 (Ryden p. 329)
     #therefore, we can say that sin3i approximately == 1
     #might not be doing this correctly
-    part_d_e(Ma, Mb)
+    part_d_e(Ma, Mb, L_L0, va, vb, orbit_data['Orbital Phase'])
 
 
 if __name__ == '__main__':
